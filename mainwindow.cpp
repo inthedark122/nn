@@ -5,6 +5,7 @@
 #include "neural_network.h"
 #include "draw.cpp"
 
+
 #define length(x)  (sizeof(x)/sizeof(*(x)))
 
 MainWindow::MainWindow(QWidget *parent):QMainWindow(parent),ui(new Ui::MainWindow) {
@@ -22,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent),ui(new Ui::MainWindo
   ui->graphicsNNTeach->setRenderHint(QPainter::Antialiasing, true);
 
   drawManipulator();
-  drawGraph();
+  //drawGraph();
 }
 
 MainWindow::~MainWindow() {
@@ -93,7 +94,7 @@ void MainWindow::setParamsAngleToInputPr() {
 void MainWindow::action_teach() {
   int iterat = ui->iteration->text().toInt();
   this->k_iter_graph = 0;
-  int k_graph = 1;
+  double k_graph = 1;
   int dec = 0;
   int count = 0;
   for (int cikl=0; cikl < iterat; cikl++) {
@@ -103,6 +104,7 @@ void MainWindow::action_teach() {
     draw_matrix[cikl] = 200;
     random_params_angle();
     setParamsAngleToInputPr();
+    forward_kinematics_calc();
     while (true) {
       int Q1 = this->current_angle[0];
       int Q2 = this->current_angle[1];
@@ -141,12 +143,12 @@ void MainWindow::action_teach() {
         }
       }
       if (tmp == 0) break;
-      if (k > 50) break;
+      if (k > 100) break;
       k++;
       draw_matrix[cikl] -= k_graph;
       dec++;
     }
-
+    //draw_matrix[cikl] = draw_matrix[cikl]*0.5
     //int difference = time.elapsed();
     //ui->textEdit->append("\nВремя 1-го цикла - ");
     //ui->textEdit->append(QString::number(difference));
@@ -182,7 +184,7 @@ void  MainWindow::countOuter(double *sample) {
 }
 void MainWindow::study(double *sample, double *answer) {
   countOuter(sample);
-  double a = 0.0001;
+  double a = 0.01;
 
   // Проверка на правильный вариант
   int tmp = 0;
@@ -198,11 +200,10 @@ void MainWindow::study(double *sample, double *answer) {
   double G_in_eh[size_hidden];
   for (int i=0; i < size_hidden; i++) G_in_eh[i] = 0;
   for (int i=0; i < size_outer; i++) {
-    double tmp = answer[i];
-    double G_H2O = answer[i] - outer_fun[i]*this->k_nn; //self.unfunct(self.outer[i])
+    double G_H2O = (answer[i]/this->k_nn - outer_fun[i]); //*this->unfunct(this->outer[i]); //self.unfunct(self.outer[i])
     for (int j=0; j < this->size_hidden; j++) {
       G_in_eh[j] += G_H2O * this->wHO[j][i];
-      err_HO[j][i] = a*a*G_H2O*hidden[j];
+      err_HO[j][i] = a*G_H2O*hidden[j];
     }
   }
 
@@ -216,8 +217,9 @@ void MainWindow::study(double *sample, double *answer) {
   double err_EH[size_input][size_hidden];
   for (int i=0; i < size_hidden; i++) {
     //double G_eh = G_in_eh[i]*unfunct(hidden[i]);
+    //G_in_eh[i] = this->unfunct(G_in_eh[i]);
     for (int j=0; j < size_input; j++) {
-      err_EH[j][i] = a*G_in_eh[i]*int(sample[j]);
+      err_EH[j][i] = a*G_in_eh[i]*sample[j]; //this->unfunct(this->hidden[i])
     }
   }
 
@@ -228,12 +230,17 @@ void MainWindow::study(double *sample, double *answer) {
   }
 
   QString text;
-  QString answer_text;
+  QString answer_text, input_text;
+  for (int i=0; i < this->size_input; i++) {
+    input_text.append(QString::number(sample[i])+" ");
+  }
   for (int i=0; i < size_outer; i++) {
     answer_text.append(QString::number(int(answer[i]))+" ");
   }
-  ui->textEdit->append(answer_text);
-  text.append("Результат:");
+  text.append(input_text);
+  text.append("\n");
+  text.append(answer_text);
+  text.append("\nРезультат:");
   text.append("\n");
   for (int i=0; i < size_outer; i++) {
     outer_fun[i] = outer_fun[i]*this->k_nn;
@@ -286,9 +293,9 @@ void MainWindow::ob_random_fun() {
 
 void MainWindow::ob_kin_calc_fun() {
   double ar[3];
-  ar[0] = this->ui->ob_x->text().toInt();
-  ar[1] = this->ui->ob_y->text().toInt();
-  ar[2] = this->ui->ob_z->text().toInt();
+  ar[0] = this->ui->ob_x->text().toInt() / this->k_nn;
+  ar[1] = this->ui->ob_y->text().toInt() / this->k_nn;
+  ar[2] = this->ui->ob_z->text().toInt() / this->k_nn;
   countOuter(ar);
   ui->ob_Q1->setText(QString::number(this->outer_fun[0]*40));
   ui->ob_Q2->setText(QString::number(this->outer_fun[1]*40));
@@ -309,7 +316,9 @@ float MainWindow::unfunct(float param) {
 
 // Общие функции
 void MainWindow::getMapAction() {
-  connect(ui->tread_action, SIGNAL(clicked()), this, SLOT(tread_action()) );
+  //connect(ui->tread_action, SIGNAL(clicked()), this, SLOT(tread_action()) );
+  connect(timer, SIGNAL(timeout()), this, SLOT(update_nn()));
+  connect(this->ui->timer_check, SIGNAL(clicked()), this, SLOT(timer_check_fun()));
 
   connect(ui->calc, SIGNAL(clicked()), this, SLOT(calc_action()));
   connect(ui->clear_text, SIGNAL(clicked()), this, SLOT(clear_text()));
@@ -335,17 +344,17 @@ void MainWindow::getDefaultWeight() {
   //t->setParametrs(this->textEdit);
 
   L[0] = 10; L[1] = 5; L[2] = 9; L[3] = 4; L[4] = 5;
-  size_hidden = 125;
+  size_hidden = 225;
   size_input = 3;
   size_outer = 3;
   for(int i=0; i < size_input; i++){
     for(int j=0; j < size_hidden; j++){
-      wEH[i][j] = (double)(rand()%100-50)/100000;
+      wEH[i][j] = ((double)(rand()%100-50))/10000;
     }
   }
   for(int i=0; i < size_hidden; i++){
     for(int j=0; j < size_outer; j++){
-      wHO[i][j] = (double)(rand()%100-50)/100000;;
+      wHO[i][j] = ((double)(rand()%100-50))/10000;;
     }
   }
 }
@@ -394,4 +403,16 @@ void MainWindow::drawGraph() {
     s_y = draw_matrix[i];
   }
   graphicsNNTeachScene->update();
+}
+
+void MainWindow::update_nn() {
+  this->action_teach();
+}
+
+void MainWindow::timer_check_fun() {
+  if (this->ui->timer_check->isChecked()) {
+    this->timer->start(5000);
+  } else {
+    this->timer->stop();
+  }
 }

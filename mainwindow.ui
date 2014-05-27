@@ -28,7 +28,7 @@
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
-      <string>Главное меню</string>
+      <string>Основное окно</string>
      </attribute>
      <widget class="QTextEdit" name="textEdit">
       <property name="geometry">
@@ -240,17 +240,17 @@
        </property>
       </widget>
      </widget>
-     <widget class="QPushButton" name="tread_action">
+     <widget class="QCheckBox" name="timer_check">
       <property name="geometry">
        <rect>
-        <x>490</x>
-        <y>260</y>
-        <width>87</width>
-        <height>27</height>
+        <x>480</x>
+        <y>110</y>
+        <width>90</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Поток</string>
+       <string>timer</string>
       </property>
      </widget>
     </widget>
@@ -1001,7 +1001,7 @@
     </property>
     <widget class="QWidget" name="tab_4">
      <attribute name="title">
-      <string>Tab 1</string>
+      <string>КСР</string>
      </attribute>
      <widget class="QGraphicsView" name="graphicsView">
       <property name="geometry">
@@ -1016,7 +1016,7 @@
     </widget>
     <widget class="QWidget" name="tab_5">
      <attribute name="title">
-      <string>Tab 2</string>
+      <string>График обучение</string>
      </attribute>
      <widget class="QGraphicsView" name="graphicsNNTeach">
       <property name="geometry">

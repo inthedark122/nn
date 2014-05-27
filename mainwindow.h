@@ -10,6 +10,7 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsItem>
+#include <QTimer>
 #include "tread.h"
 
 namespace Ui {
@@ -27,20 +28,21 @@ public:
   QPushButton cacl;
   QLineEdit iteration;
   Thread *t;
+  QTimer *timer = new QTimer(this);
   // Константы
 
   int total_main_count = 0;
 
   static const double PI  = 3.141592653589793238463;
   int size_hidden, size_hidden2, size_input, size_outer;
-  static const double k_nn = 40, k_pos = 20;
-  double hidden[125],
-         hidden2[125],
-         enters[24],
-         outer[16],
-         outer_fun[16];
-  double wEH[24][525],
-         wHH2[525][525],
+  static const double k_nn = 45, k_pos = 25;
+  double hidden[525],
+  //       hidden2[125],
+         enters[3],
+         outer[3],
+         outer_fun[3];
+  double wEH[24][225],
+  //       wHH2[525][525],
          wHO[525][36];
   int current_angle[5];
   int current_position[3];
@@ -50,7 +52,7 @@ public:
   QGraphicsScene *graphicsScene;
   QGraphicsScene *graphicsNNTeachScene;
   int k_iter_graph;
-  int draw_matrix[100];
+  double draw_matrix[100];
 
   // Общее
   void set_text(double);
@@ -86,6 +88,8 @@ public:
 
   private slots:
     void tread_action();
+    void update_nn();
+    void timer_check_fun();
 
     void calc_action();
     void clear_text();
