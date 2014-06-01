@@ -1,4 +1,7 @@
 #include <QTime>
+#include <QtSerialPort/QSerialPort>
+#include <QtSerialPort/QSerialPortInfo>
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <math.h>
@@ -22,6 +25,19 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent),ui(new Ui::MainWindo
   ui->graphicsNNTeach->setScene(graphicsNNTeachScene);
   ui->graphicsNNTeach->setRenderHint(QPainter::Antialiasing, true);
 
+  foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts()) {
+    QString txt = info.portName();
+    ui->comboBox->addItem(txt);
+    //info.description();
+    //info.manufacturer();
+
+    // Example use SerialPort
+    //SerialPort serial;
+    //serial.setPort(info);
+    //if (serial.open(QIODevice::ReadWrite))
+      //serial.close();
+    //}
+  }
   drawManipulator();
   //drawGraph();
 }
