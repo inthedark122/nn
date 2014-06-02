@@ -47,6 +47,10 @@ public:
   int current_angle[5];
   int current_position[3];
   int L[5];
+  // Обучение
+  int teach_data[255][2][3];
+  int teach_count = 0;
+  int teach_count_data = 0;
 
   // Константы рисования
   QGraphicsScene *graphicsScene;
@@ -100,6 +104,11 @@ public:
     //Обратная задача кинемаики
     void ob_random_fun();
     void ob_kin_calc_fun();
+
+    // Обучающая выборка
+    void teach_add_fun();
+    void teach_delete_fun();
+
 private:
   Ui::MainWindow *ui;
 };

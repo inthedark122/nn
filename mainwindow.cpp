@@ -39,7 +39,6 @@ MainWindow::MainWindow(QWidget *parent):QMainWindow(parent),ui(new Ui::MainWindo
     //}
   }
   drawManipulator();
-  //drawGraph();
 }
 
 MainWindow::~MainWindow() {
@@ -71,22 +70,9 @@ void MainWindow::nnBeginStudy() {
 
 // Функции получения данных
 void MainWindow::random_params_angle() {
-  int ar_tmp[3][3];
-  ar_tmp[0][0] = 3;
-  ar_tmp[0][1] = 4;
-  ar_tmp[0][2] = 7;
-  ar_tmp[1][0] = 15;
-  ar_tmp[1][1] = 20;
-  ar_tmp[1][2] = 30;
-  ar_tmp[2][0] = 10;
-  ar_tmp[2][1] = 30;
-  ar_tmp[2][2] = 40;
-  int k = rand()%3;
-  this->current_angle[0] = ar_tmp[k][0]; //rand()%40;
-  this->current_angle[1] = ar_tmp[k][1]; //rand()%40;
-  this->current_angle[2] = ar_tmp[k][2]; //rand()%40;
-  //this->current_angle[3] = rand()%40;
-  //this->current_angle[4] = rand()%40;
+  for (int i = 0; i < this->size_input; i++) {
+    this->current_angle[i] = rand()%40;
+  }
 }
 void MainWindow::getParamsAngleFromInputPr() {
   this->current_angle[0] = ui->pr_Q1->text().toInt();
@@ -110,7 +96,7 @@ void MainWindow::setParamsAngleToInputPr() {
 void MainWindow::action_teach() {
   int iterat = ui->iteration->text().toInt();
   this->k_iter_graph = 0;
-  double k_graph = 1;
+  double k_graph = 0.5;
   int dec = 0;
   int count = 0;
   for (int cikl=0; cikl < iterat; cikl++) {
@@ -118,16 +104,21 @@ void MainWindow::action_teach() {
     //time.start();
     int k = 0;
     draw_matrix[cikl] = 200;
-    random_params_angle();
-    setParamsAngleToInputPr();
-    forward_kinematics_calc();
+    //random_params_angle();
+    //setParamsAngleToInputPr();
+    //forward_kinematics_calc();
     while (true) {
-      int Q1 = this->current_angle[0];
-      int Q2 = this->current_angle[1];
-      int Q3 = this->current_angle[2];
-      int x = this->current_position[0];
-      int y = this->current_position[1];
-      int z = this->current_position[2];
+      int Q1 = this->teach_data[this->teach_count_data][1][0]; //this->current_angle[0];
+      int Q2 = this->teach_data[this->teach_count_data][1][1]; //this->current_angle[1];
+      int Q3 = this->teach_data[this->teach_count_data][1][2]; //this->current_angle[2];
+      int x = this->teach_data[this->teach_count_data][0][0]; //this->current_position[0];
+      int y = this->teach_data[this->teach_count_data][0][1]; //this->current_position[1];
+      int z = this->teach_data[this->teach_count_data][0][2]; //this->current_position[2];
+      if (this->teach_count_data >= this->teach_count-1) {
+        this->teach_count_data = 0;
+      } else {
+        this->teach_count_data++;
+      }
 
       double ar[3], ar_answer[3];
       //for (int i=0; i < 8; ++i) { ar[i] = (int)(x+50) & (1 << i) ? 1 : 0; }
@@ -154,12 +145,12 @@ void MainWindow::action_teach() {
 
       int tmp = 0;
       for (int j = 0; j < size_outer; j++ ) {
-        if(ar_answer[j] != round(this->outer_fun[j]*40)) {
+        if(ar_answer[j] != round(this->outer_fun[j]*this->k_nn)) {
           tmp++;
         }
       }
       if (tmp == 0) break;
-      if (k > 100) break;
+      //if (k > 20) break;
       k++;
       draw_matrix[cikl] -= k_graph;
       dec++;
@@ -200,7 +191,7 @@ void  MainWindow::countOuter(double *sample) {
 }
 void MainWindow::study(double *sample, double *answer) {
   countOuter(sample);
-  double a = 0.01;
+  double a = 0.02;
 
   // Проверка на правильный вариант
   int tmp = 0;
@@ -301,21 +292,21 @@ void MainWindow::ob_random_fun() {
   ar_tmp[2][0] = 16;
   ar_tmp[2][1] = 17;
   ar_tmp[2][2] = 2;
-  int k = rand()%3;
-  ui->ob_x->setText(QString::number(ar_tmp[k][0]));
-  ui->ob_y->setText(QString::number(ar_tmp[k][1]));
-  ui->ob_z->setText(QString::number(ar_tmp[k][2]));
+  int k = rand()%this->teach_count;
+  ui->ob_x->setText(QString::number(this->teach_data[k][0][0]));
+  ui->ob_y->setText(QString::number(this->teach_data[k][0][1]));
+  ui->ob_z->setText(QString::number(this->teach_data[k][0][2]));
 }
 
 void MainWindow::ob_kin_calc_fun() {
   double ar[3];
-  ar[0] = this->ui->ob_x->text().toInt() / this->k_nn;
-  ar[1] = this->ui->ob_y->text().toInt() / this->k_nn;
-  ar[2] = this->ui->ob_z->text().toInt() / this->k_nn;
+  ar[0] = this->ui->ob_x->text().toInt() / this->k_pos;
+  ar[1] = this->ui->ob_y->text().toInt() / this->k_pos;
+  ar[2] = this->ui->ob_z->text().toInt() / this->k_pos;
   countOuter(ar);
-  ui->ob_Q1->setText(QString::number(this->outer_fun[0]*40));
-  ui->ob_Q2->setText(QString::number(this->outer_fun[1]*40));
-  ui->ob_Q3->setText(QString::number(this->outer_fun[2]*40));
+  ui->ob_Q1->setText(QString::number(this->outer_fun[0]*this->k_nn));
+  ui->ob_Q2->setText(QString::number(this->outer_fun[1]*this->k_nn));
+  ui->ob_Q3->setText(QString::number(this->outer_fun[2]*this->k_nn));
 }
 
 // Функции активации
@@ -344,6 +335,9 @@ void MainWindow::getMapAction() {
 
   connect(ui->ob_random, SIGNAL(clicked()), this, SLOT(ob_random_fun()) );
   connect(ui->ob_kin_calc, SIGNAL(clicked()), this, SLOT(ob_kin_calc_fun()) );
+
+  connect(ui->teach_add, SIGNAL(clicked()), this, SLOT(teach_add_fun()) );
+  connect(ui->teach_delete, SIGNAL(clicked()), this, SLOT(teach_delete_fun()) );
 }
 
 void MainWindow::tread_action() {
@@ -431,4 +425,37 @@ void MainWindow::timer_check_fun() {
   } else {
     this->timer->stop();
   }
+}
+
+// Обучение
+void MainWindow::teach_add_fun() {
+  QString text_position, text_angle;
+  for (int i = 0; i < this->size_input; i++ ) {
+    this->teach_data[this->teach_count][0][i] = this->current_position[i];
+    text_position.append(QString::number(this->current_position[i]) + " ");
+  }
+  for (int i = 0; i < this->size_outer; i++) {
+    this->teach_data[this->teach_count][1][i] = this->current_angle[i];
+    text_angle.append(QString::number(this->current_angle[i]) + " ");
+  }
+  QTableWidgetItem *input = new QTableWidgetItem(text_position);
+  QTableWidgetItem *otput = new QTableWidgetItem(text_angle);
+  this->ui->teach_table->insertRow(this->teach_count);
+  this->ui->teach_table->setItem(this->teach_count, 0, input);
+  this->ui->teach_table->setItem(this->teach_count, 1, otput);
+  this->teach_count++;
+}
+
+void MainWindow::teach_delete_fun() {
+  int k = this->ui->teach_table->currentRow();
+  this->ui->teach_table->removeRow(k);
+  for (int i = k; i < teach_count; i++) {
+    for (int in = 0; in < this->size_input; in++) {
+      this->teach_data[i][0][in] = this->teach_data[i+1][0][in];
+    }
+    for (int ou = 0; ou < this->size_input; ou++) {
+      this->teach_data[i][1][ou] = this->teach_data[i+1][1][ou];
+    }
+  }
+  this->teach_count--;
 }

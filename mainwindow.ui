@@ -20,7 +20,7 @@
       <x>10</x>
       <y>0</y>
       <width>691</width>
-      <height>571</height>
+      <height>331</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -1030,6 +1030,65 @@
      </widget>
     </widget>
    </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>360</y>
+      <width>691</width>
+      <height>221</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Обучающая выборка</string>
+    </property>
+    <widget class="QTableWidget" name="teach_table">
+     <property name="geometry">
+      <rect>
+       <x>25</x>
+       <y>31</y>
+       <width>231</width>
+       <height>171</height>
+      </rect>
+     </property>
+     <column>
+      <property name="text">
+       <string>Вход</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Выход</string>
+      </property>
+     </column>
+    </widget>
+    <widget class="QPushButton" name="teach_add">
+     <property name="geometry">
+      <rect>
+       <x>380</x>
+       <y>30</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Добавить</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="teach_delete">
+     <property name="geometry">
+      <rect>
+       <x>380</x>
+       <y>60</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Удалить</string>
+     </property>
+    </widget>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -1037,7 +1096,7 @@
      <x>0</x>
      <y>0</y>
      <width>1119</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
